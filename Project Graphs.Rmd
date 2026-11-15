@@ -1,0 +1,82 @@
+---
+title: "Project Checkpoint 4"
+author: "Jordyn Greseth"
+date: "2026-11-06"
+output: word_document
+---
+```{r}
+library(readxl)
+library(ggplot2)
+
+sleep_data <- read_excel("Project Sleep Data.xlsx")
+sleep_data1 <- subset(sleep_data, `Audio Type` != "NULL" & Day != 15)
+head(sleep_data)
+```
+## Data Analysis
+
+The current data analysis includes 20 nights of sleep observations across four audio categories. The results showed that calming music had the highest average sleep duration at 7.54 hours, while no audio had the lowest at 6.60 hours. Audiobook/ASMR had the highest average perceived sleep quality at 7.4 out of 10, compared to 6.2 for no audio. No audio also had the highest average number of disturbances at 4.6 per night.
+
+An interesting effect that came from listening to audio while asleep was the effect it had on restless sleep duration. Restless duration was estimated each morning based on the disturbances I remembered from the night before. For each night, I estimated how long I was restless during each disturbance and recorded the average in minutes. Because these were self-estimates rather than device measurements keepping trakc of when i fell back to sleep they are approximate.
+
+When all three audio types are compared to no audio. No audio nights had a significantly higher sleep quality. This could suggest that having some sort of audio helps compared to none, and almost makes me feel like I should inlcude some sort of T-test to compare audio versus no audio but the number of nights would be slightly scewed to nights in which I had audio playing. 
+
+
+```{r}
+ggplot(data = sleep_data1,
+       aes(x = Day, y = `Hours Slept`, color = `Audio Type`)) +
+  geom_point(size = 3) +
+  labs(
+    title = "Hours Slept by Day and Audio Type",
+    x = "Day",
+    y = "Hours Slept",
+    color = "Audio Type"
+  ) +
+  scale_x_continuous(breaks = 1:21)
+```
+```{r}
+sleep_data1$`Hours Slept` <- as.numeric(sleep_data1$`Hours Slept`)
+```
+
+```{r}
+ggplot(data = sleep_data1,
+       aes(x = `Audio Type`, y = `Hours Slept`)) +
+  geom_boxplot(fill = "lightblue", color = "black") +
+  labs(
+    title = "Sleep Duration by Audio Type",
+    x = "Audio Type",
+    y = "Hours Slept"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+ggplot(data = sleep_data1,
+       aes(x = as.numeric(`Quality (1–10)`), fill = `Audio Type`)) +
+  geom_histogram(binwidth = 1, boundary = 0.5,
+                 position = "dodge", color = "black") +
+  labs(
+    title = "Sleep Quality Frequency by Audio Type",
+    x = "Sleep Quality Rating (1–10)",
+    y = "Frequency",
+    fill = "Audio Type"
+  ) +
+  theme_minimal()
+```
+
+## Anova results
+### Sleep Quality Rating
+```{r}
+quality_anova <- aov(as.numeric(`Quality (1–10)`) ~ `Audio Type`,
+                    data = sleep_data1)
+
+summary(quality_anova)
+```
+
+### Sleep duration.
+```{r}
+hours_anova <- aov(as.numeric(`Hours Slept`) ~ `Audio Type`,
+                   data = sleep_data1)
+
+summary(hours_anova)
+```
+
